@@ -37,6 +37,21 @@ function ph(el){
 <div class="f"><label class="l" for="name">Your name</label><input type="text" id="name" placeholder="Enter your full name"></div>
 <div class="f"><label class="l" for="notes" id="notesLabel">Notes (optional)</label><textarea id="notes" rows="2"></textarea></div>
 
+<fieldset>
+<legend>How will you pay?</legend>
+<div class="seg">
+<label><input type="radio" name="pay" value="Cash" checked><span>Cash</span></label>
+<label><input type="radio" name="pay" value="Online Banking"><span>Online banking</span></label>
+</div>
+<div id="bankBox" hidden>
+<div class="seg bank">
+<label><input type="radio" name="bank" value="Belizebank" checked><span>Belizebank</span></label>
+<label><input type="radio" name="bank" value="Atlantic Bank"><span>Atlantic Bank</span></label>
+</div>
+<div class="acct" id="acct"></div>
+</div>
+</fieldset>
+
 <section class="receipt">
 <h3>Your receipt</h3>
 <div id="lines"></div>
@@ -58,20 +73,26 @@ const MENU=[
 ["Friday","Conch Soup (seasonal)",15,"conch soup.jpg"],
 ["Friday","Bundiga with fish and pigtail, coconut white rice",20,"bundiga.jpg"],
 ["Saturday","Hudut",20,"hudut.jpg"],
-["Every day","Rice & beans, salad with chicken",12,"rice-beans.jpg",1],
-["Every day","Rice & beans, salad with pork",12,"rice-beans.jpg",1],
-["Every day","Stew bean, coconut white rice, coleslaw with chicken",12,"stew-bean.jpg",1],
-["Every day","Stew bean, coconut white rice, coleslaw with pork",12,"stew-bean.jpg",1],
-["Every day","Stew bean, coconut white rice, coleslaw with pigtail",12,"stew-bean.jpg",1],
-["Every day","Any rice option with fish added (say which in notes)",15,"rice-with-fish.jpg",1]
+["Every day","Rice & beans, salad with chicken",12,"Rice & beans, salad with chicken.jpg",1],
+["Every day","Rice & beans, salad with pork",12,"Rice & beans, salad with pork.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with chicken",12,"Stew bean, coconut white rice, coleslaw with chicken.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pork",12,"Stew bean, coconut white rice, coleslaw with pork.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pigtail",12,"Stew bean, coconut white rice, coleslaw with pigtail.jpg",1],
+["Every day","Any rice option with fish added (say which in notes)",15,"Any rice option with fish added (say which in notes).jpg",1]
 ];
 const $=s=>document.querySelector(s), qty=MENU.map(()=>0), money=n=>"$"+n.toFixed(2);
 const type=()=>$("input[name=type]:checked").value;
+const pay=()=>$("input[name=pay]:checked").value, bank=()=>$("input[name=bank]:checked").value;
+// Bank accounts shown to customers who pay online: [account holder, account number]
+const BANKS={
+  "Belizebank":[["Kareem Zuniga","232020010220025"],["Karima Higinio","162140010160001"]],
+  "Atlantic Bank":[["Karima Higinio","2120019246"]]
+};
 
 let html="",last="";
 MENU.forEach((m,i)=>{
   if(m[0]!==last){html+=`<h2>${m[0]==="Every day"?"Added menu (every day)":m[0]}</h2>`;last=m[0]}
-  html+=`<div class="card" id="c${i}"><img src="${encodeURI(m[3])}" alt="" onerror="ph(this)"><div class="info"><b>${m[1].replace("&","&amp;")}</b><span>${money(m[2])}</span></div>`+
+  html+=`<div class="card" id="c${i}"><img src="${encodeURIComponent(m[3])}" alt="" onerror="ph(this)"><div class="info"><b>${m[1].replace("&","&amp;")}</b><span>${money(m[2])}</span></div>`+
   (m[4]?`<button type="button" class="yes" data-i="${i}" data-d="t">Add</button>`
        :`<div class="qty"><button type="button" data-i="${i}" data-d="-1" aria-label="Remove one">&minus;</button><output>0</output><button type="button" data-i="${i}" data-d="1" aria-label="Add one">+</button></div>`)+`</div>`;
 });
@@ -83,7 +104,14 @@ $("#menu").addEventListener("click",e=>{
   qty[i]=d==="t"?(qty[i]?0:1):Math.max(0,qty[i]+ +d);
   refresh();
 });
-document.querySelectorAll("input[name=type]").forEach(r=>r.addEventListener("change",refresh));
+document.querySelectorAll("input[name=type],input[name=pay],input[name=bank]").forEach(r=>r.addEventListener("change",refresh));
+
+// Copy button on the account numbers
+$("#acct").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-copy]"); if(!b) return;
+  if(navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy);
+  b.textContent="Copied \u2713"; setTimeout(()=>b.textContent="Copy",1500);
+});
 
 function order(){
   const items=MENU.map((m,i)=>({name:m[1],qty:qty[i],price:m[2]})).filter(x=>x.qty>0);
@@ -104,6 +132,13 @@ function refresh(){
   if(o.fee) h+=`<div class="row"><span>Delivery fee</span><span>${money(o.fee)}</span></div>`;
   $("#lines").innerHTML=h; $("#total").textContent=money(o.total);
   const del=type()==="Delivery";
+  const online=pay()==="Online Banking";
+  $("#bankBox").hidden=!online;
+  if(online){
+    $("#acct").innerHTML=`<p class="acct-top">${o.total?"Send <b>"+money(o.total)+"</b> to":"Pay"} one of these ${bank()} accounts:</p>`+
+      BANKS[bank()].map(a=>`<div class="acct-row"><div><small>${a[0]}</small><strong>${a[1]}</strong></div><button type="button" data-copy="${a[1]}">Copy</button></div>`).join("")+
+      `<p class="acct-note">After paying, send your receipt or a screenshot in the WhatsApp chat.</p>`;
+  }
   $("#notesLabel").textContent=del?"Delivery address and directions":"Notes (optional)";
   $("#notes").placeholder=del?"Where should we deliver?":"Pick-up time, or anything we should know";
 }
@@ -114,7 +149,7 @@ $("#send").addEventListener("click",()=>{
   if(!o.items.length) return alert("Please add at least one item.");
   if(!name){$("#name").focus(); return alert("Please enter your name.");}
   if(type()==="Delivery"&&!notes){$("#notes").focus(); return alert("Please enter your delivery address.");}
-  let msg=`*NEW ORDER - Garifuna Classique Cuisine*\n\n*Customer Name:* ${name}\n*Order Type:* ${type()}\n*Items Ordered:*\n`;
+  let msg=`*NEW ORDER - Garifuna Classique Cuisine*\n\n*Customer Name:* ${name}\n*Order Type:* ${type()}\n*Payment:* ${pay()==="Cash"?"Cash":"Online Banking - "+bank()}\n*Items Ordered:*\n`;
   msg+=o.items.map(x=>`- ${x.name} (Qty: ${x.qty}) - ${money(x.qty*x.price)}`).join("\n")+"\n\n";
   if(o.fee) msg+=`*Delivery Fee:* ${money(o.fee)}\n`;
   msg+=`*Grand Total:* ${money(o.total)}\n`;
