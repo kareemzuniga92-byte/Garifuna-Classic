@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garifuna Store Menu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="shop-container">
+
+        <div class="flag-ribbon">
+            <div class="ribbon-yellow"></div>
+            <div class="ribbon-white"></div>
+            <div class="ribbon-black"></div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 class="shop-title">Kareem's Shop</h1>
+            <p class="shop-subtitle">Select items &amp; submit directly via WhatsApp</p>
+        </div>
+
+        <form id="orderForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+            <div>
+                <label class="section-label">Available Items</label>
+                <div class="item-list">
+
+                    <div class="item-card">
+                        <div class="item-info-wrapper">
+                            <img src="product.jpg" alt="Item Image" class="item-img"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23ddd%22/></svg>'">
+                            <div>
+                                <span class="item-name">Item Choice A</span>
+                                <span class="item-price">$10.00</span>
+                            </div>
+                        </div>
+                        <input type="number" min="0" value="0" data-name="Item Choice A" data-price="10" class="item-qty input-qty">
+                    </div>
+
+                    <div class="item-card">
+                        <div class="item-info-wrapper">
+                            <img src="product2.jpg" alt="Item Image" class="item-img"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23ddd%22/></svg>'">
+                            <div>
+                                <span class="item-name">Item Choice B</span>
+                                <span class="item-price">$15.00</span>
+                            </div>
+                        </div>
+                        <input type="number" min="0" value="0" data-name="Item Choice B" data-price="15" class="item-qty input-qty">
+                    </div>
+
+                </div>
+            </div>
+
+            <div style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <div class="form-group">
+                    <label class="section-label" style="margin: 0 0 0.5rem 0;">Your Name</label>
+                    <input type="text" id="customerName" required class="form-input" placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="section-label" style="margin: 0 0 0.5rem 0;">Delivery Address or Notes</label>
+                    <textarea id="deliveryNotes" rows="2" class="form-input" style="resize: none; font-family: inherit;" placeholder="Provide directions or specific request details..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Send Order via WhatsApp
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Belize country code (501) + local number (6223002)
+        const WHATSAPP_NUMBER = "5016223002";
+
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('customerName').value.trim();
+            const notes = document.getElementById('deliveryNotes').value.trim();
+
+            let orderSummary = "";
+            let grandTotal = 0;
+
+            document.querySelectorAll('.item-qty').forEach(input => {
+                const qty = parseInt(input.value, 10) || 0;
+                if (qty > 0) {
+                    const itemName = input.getAttribute('data-name');
+                    const price = parseFloat(input.getAttribute('data-price'));
+                    const itemTotal = qty * price;
+                    grandTotal += itemTotal;
+                    orderSummary += `- ${itemName} (Qty: ${qty}) - $${itemTotal.toFixed(2)}\n`;
+                }
+            });
+
+            if (grandTotal === 0) {
+                alert("Please add at least one item to your order.");
+                return;
+            }
+
+            let message = `*NEW ORDER RECEIVED*\n\n`;
+            message += `*Customer Name:* ${name}\n`;
+            message += `*Items Ordered:*\n${orderSummary}\n`;
+            message += `*Grand Total:* $${grandTotal.toFixed(2)}\n`;
+            if (notes !== "") {
+                message += `*Delivery Notes/Address:* ${notes}\n`;
+            }
+
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.location.href = url;
+        });
+    </script>
+</body>
+</html>
