@@ -1,117 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garifuna Store Menu</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garifuna Classique Cuisine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+const PH='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" fill="#eee"/><text x="36" y="40" font-size="11" text-anchor="middle" fill="#999">photo</text></svg>');
+function ph(el){el.onerror=null;el.src=PH}
+</script>
 </head>
 <body>
+<div class="wrap">
+<div class="band-y"></div><div class="band-w"></div>
+<header><h1>Garifuna Classique Cuisine</h1><p>Daily menu, lunch only. Order on WhatsApp.</p></header>
+<main>
+<div id="menu"></div>
 
-    <div class="shop-container">
+<fieldset>
+<legend>Pick-up or delivery</legend>
+<div class="seg">
+<label><input type="radio" name="type" value="Self Pick-up" checked><span>Self pick-up</span></label>
+<label><input type="radio" name="type" value="Delivery"><span>Delivery (+$5.00)</span></label>
+</div>
+</fieldset>
 
-        <div class="flag-ribbon">
-            <div class="ribbon-yellow"></div>
-            <div class="ribbon-white"></div>
-            <div class="ribbon-black"></div>
-        </div>
+<div class="f"><label class="l" for="name">Your name</label><input type="text" id="name" placeholder="Enter your full name"></div>
+<div class="f"><label class="l" for="notes" id="notesLabel">Notes (optional)</label><textarea id="notes" rows="2"></textarea></div>
 
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 class="shop-title">Kareem's Shop</h1>
-            <p class="shop-subtitle">Select items &amp; submit directly via WhatsApp</p>
-        </div>
+<section class="receipt">
+<h3>Your receipt</h3>
+<div id="lines"></div>
+<div class="row total"><span>Total</span><span id="total">$0.00</span></div>
+</section>
+<button type="button" class="send" id="send">Send order on WhatsApp</button>
+</main>
+</div>
 
-        <form id="orderForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
+<script>
+const NUMBER="5016223002", FEE=5;
+// [day, name, price, photo file, 1 = yes/no item]
+const MENU=[
+["Monday","Tahara with fried fish & pigtail",15,"tahara"],
+["Tuesday","Boil up with fried fish, egg and pigtail",20,"boil-up"],
+["Wednesday","Cowfoot soup",15,"cowfoot-soup"],
+["Thursday","Darasa with stew fish",15,"darasa"],
+["Thursday","Darasa with stew chicken",15,"darasa"],
+["Friday","Conch Soup (seasonal)",15,"conch-soup"],
+["Friday","Bundiga with fish and pigtail, coconut white rice",20,"bundiga"],
+["Saturday","Hudut",20,"hudut"],
+["Every day","Rice & beans, salad with chicken",12,"rice-beans",1],
+["Every day","Rice & beans, salad with pork",12,"rice-beans",1],
+["Every day","Stew bean, coconut white rice, coleslaw with chicken",12,"stew-bean",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pork",12,"stew-bean",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pigtail",12,"stew-bean",1],
+["Every day","Any rice option with fish added (say which in notes)",15,"rice-with-fish",1]
+];
+const $=s=>document.querySelector(s), qty=MENU.map(()=>0), money=n=>"$"+n.toFixed(2);
+const type=()=>$("input[name=type]:checked").value;
 
-            <div>
-                <label class="section-label">Available Items</label>
-                <div class="item-list">
+let html="",last="";
+MENU.forEach((m,i)=>{
+  if(m[0]!==last){html+=`<h2>${m[0]==="Every day"?"Added menu (every day)":m[0]}</h2>`;last=m[0]}
+  html+=`<div class="card" id="c${i}"><img src="images/${m[3]}.jpg" alt="" onerror="ph(this)"><div class="info"><b>${m[1].replace("&","&amp;")}</b><span>${money(m[2])}</span></div>`+
+  (m[4]?`<button type="button" class="yes" data-i="${i}" data-d="t">Add</button>`
+       :`<div class="qty"><button type="button" data-i="${i}" data-d="-1" aria-label="Remove one">&minus;</button><output>0</output><button type="button" data-i="${i}" data-d="1" aria-label="Add one">+</button></div>`)+`</div>`;
+});
+$("#menu").innerHTML=html;
 
-                    <div class="item-card">
-                        <div class="item-info-wrapper">
-                            <img src="product.jpg" alt="Item Image" class="item-img"
-                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23ddd%22/></svg>'">
-                            <div>
-                                <span class="item-name">Item Choice A</span>
-                                <span class="item-price">$10.00</span>
-                            </div>
-                        </div>
-                        <input type="number" min="0" value="0" data-name="Item Choice A" data-price="10" class="item-qty input-qty">
-                    </div>
+$("#menu").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const i=+b.dataset.i, d=b.dataset.d;
+  qty[i]=d==="t"?(qty[i]?0:1):Math.max(0,qty[i]+ +d);
+  refresh();
+});
+document.querySelectorAll("input[name=type]").forEach(r=>r.addEventListener("change",refresh));
 
-                    <div class="item-card">
-                        <div class="item-info-wrapper">
-                            <img src="product2.jpg" alt="Item Image" class="item-img"
-                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23ddd%22/></svg>'">
-                            <div>
-                                <span class="item-name">Item Choice B</span>
-                                <span class="item-price">$15.00</span>
-                            </div>
-                        </div>
-                        <input type="number" min="0" value="0" data-name="Item Choice B" data-price="15" class="item-qty input-qty">
-                    </div>
+function order(){
+  const items=MENU.map((m,i)=>({name:m[1],qty:qty[i],price:m[2]})).filter(x=>x.qty>0);
+  const sub=items.reduce((s,x)=>s+x.qty*x.price,0);
+  const fee=type()==="Delivery"&&sub>0?FEE:0;
+  return {items,sub,fee,total:sub+fee};
+}
 
-                </div>
-            </div>
+function refresh(){
+  MENU.forEach((m,i)=>{
+    const c=$("#c"+i); c.classList.toggle("on",qty[i]>0);
+    const o=c.querySelector("output"); if(o) o.textContent=qty[i];
+    const y=c.querySelector(".yes"); if(y) y.textContent=qty[i]?"Added \u2713":"Add";
+  });
+  const o=order();
+  let h=o.items.map(x=>`<div class="row"><span>${x.qty} x ${x.name.replace("&","&amp;")}</span><span>${money(x.qty*x.price)}</span></div>`).join("");
+  if(!h) h='<p class="empty">Nothing added yet.</p>';
+  if(o.fee) h+=`<div class="row"><span>Delivery fee</span><span>${money(o.fee)}</span></div>`;
+  $("#lines").innerHTML=h; $("#total").textContent=money(o.total);
+  const del=type()==="Delivery";
+  $("#notesLabel").textContent=del?"Delivery address and directions":"Notes (optional)";
+  $("#notes").placeholder=del?"Where should we deliver?":"Pick-up time, or anything we should know";
+}
+refresh();
 
-            <div style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                <div class="form-group">
-                    <label class="section-label" style="margin: 0 0 0.5rem 0;">Your Name</label>
-                    <input type="text" id="customerName" required class="form-input" placeholder="Enter your full name">
-                </div>
-
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label class="section-label" style="margin: 0 0 0.5rem 0;">Delivery Address or Notes</label>
-                    <textarea id="deliveryNotes" rows="2" class="form-input" style="resize: none; font-family: inherit;" placeholder="Provide directions or specific request details..."></textarea>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn">
-                Send Order via WhatsApp
-            </button>
-        </form>
-    </div>
-
-    <script>
-        // Belize country code (501) + local number (6223002)
-        const WHATSAPP_NUMBER = "5016223002";
-
-        document.getElementById('orderForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('customerName').value.trim();
-            const notes = document.getElementById('deliveryNotes').value.trim();
-
-            let orderSummary = "";
-            let grandTotal = 0;
-
-            document.querySelectorAll('.item-qty').forEach(input => {
-                const qty = parseInt(input.value, 10) || 0;
-                if (qty > 0) {
-                    const itemName = input.getAttribute('data-name');
-                    const price = parseFloat(input.getAttribute('data-price'));
-                    const itemTotal = qty * price;
-                    grandTotal += itemTotal;
-                    orderSummary += `- ${itemName} (Qty: ${qty}) - $${itemTotal.toFixed(2)}\n`;
-                }
-            });
-
-            if (grandTotal === 0) {
-                alert("Please add at least one item to your order.");
-                return;
-            }
-
-            let message = `*NEW ORDER RECEIVED*\n\n`;
-            message += `*Customer Name:* ${name}\n`;
-            message += `*Items Ordered:*\n${orderSummary}\n`;
-            message += `*Grand Total:* $${grandTotal.toFixed(2)}\n`;
-            if (notes !== "") {
-                message += `*Delivery Notes/Address:* ${notes}\n`;
-            }
-
-            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-            window.location.href = url;
-        });
-    </script>
+$("#send").addEventListener("click",()=>{
+  const o=order(), name=$("#name").value.trim(), notes=$("#notes").value.trim();
+  if(!o.items.length) return alert("Please add at least one item.");
+  if(!name){$("#name").focus(); return alert("Please enter your name.");}
+  if(type()==="Delivery"&&!notes){$("#notes").focus(); return alert("Please enter your delivery address.");}
+  let msg=`*NEW ORDER - Garifuna Classique Cuisine*\n\n*Customer Name:* ${name}\n*Order Type:* ${type()}\n*Items Ordered:*\n`;
+  msg+=o.items.map(x=>`- ${x.name} (Qty: ${x.qty}) - ${money(x.qty*x.price)}`).join("\n")+"\n\n";
+  if(o.fee) msg+=`*Delivery Fee:* ${money(o.fee)}\n`;
+  msg+=`*Grand Total:* ${money(o.total)}\n`;
+  if(notes) msg+=`*Notes/Address:* ${notes}\n`;
+  window.location.href=`https://wa.me/${NUMBER}?text=${encodeURIComponent(msg)}`;
+});
+</script>
 </body>
 </html>
