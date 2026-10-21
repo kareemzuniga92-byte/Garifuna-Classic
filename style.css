@@ -9,11 +9,15 @@ button{font:inherit;cursor:pointer}
 /* ---- Top: flag stripes + header ---- */
 .band-y{height:16px;background:var(--gold)}
 .band-w{height:16px;background:var(--white)}
-header{background:var(--black);color:var(--white);text-align:center;padding:2.4rem 1.5rem 2.2rem;position:relative;
+header{background:var(--black);color:var(--white);text-align:center;padding:1.8rem 1.5rem 1.5rem;position:relative;
   background-image:repeating-linear-gradient(135deg,transparent 0 14px,rgba(232,185,35,.12) 14px 16px)}
 header::after{content:"";position:absolute;inset:10px;border:3px double var(--gold);pointer-events:none}
 h1{font:900 clamp(2rem,9vw,2.9rem)/1.02 Fraunces,Georgia,serif;margin:0 0 .7rem;text-shadow:3px 3px 0 var(--gold)}
 header p{margin:0;color:var(--gold);font-weight:700;letter-spacing:.02em}
+.logo{display:block;position:relative;z-index:1;width:min(140px,38vw);aspect-ratio:1;object-fit:cover;margin:0 auto .9rem;
+  border-radius:50%;border:4px solid var(--gold);box-shadow:0 0 0 4px var(--black),0 0 0 7px var(--white)}
+/* The logo already shows the name, so the text title is kept for search engines but hidden on screen */
+h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 main{padding:1.25rem 1rem 2.5rem}
 
 /* ---- Day ribbons ---- */
