@@ -22,7 +22,7 @@ function ph(el){
 <body>
 <div class="wrap">
 <div class="band-y"></div><div class="band-w"></div>
-<header><img class="logo" src="logo.jpeg" alt="Garifuna Classique Cuisine logo"><h1>Garifuna Classique Cuisine</h1><p>Daily menu, lunch only. Order on WhatsApp.</p></header>
+<header><img class="logo" width="140" height="140" src="logo.jpeg" alt="Garifuna Classique Cuisine logo"><h1>Garifuna Classique Cuisine</h1><p>Daily menu, lunch only. Order on WhatsApp.</p></header>
 <main>
 <div id="menu"></div>
 
@@ -48,22 +48,22 @@ function ph(el){
 
 <script>
 const NUMBER="5016223002", FEE=5;
-// [day, name, price, photo file, 1 = yes/no item]
+// [day, name, price, photo file name (in the same folder as index.html), 1 = yes/no item]
 const MENU=[
 ["Monday","Tahara with fried fish & pigtail",15,"tahara.jpg"],
-["Tuesday","Boil up with fried fish, egg and pigtail",20,"boil-up"],
-["Wednesday","Cowfoot soup",15,"cowfoot-soup.WEBP"],
+["Tuesday","Boil up with fried fish, egg and pigtail",20,"boil-up.jpg"],
+["Wednesday","Cowfoot soup",15,"cowfoot soup.webp"],
 ["Thursday","Darasa with stew fish",15,"darasa.jpg"],
 ["Thursday","Darasa with stew chicken",15,"darasa.jpg"],
-["Friday","Conch Soup (seasonal)",15,"conch-soup.jpg"],
+["Friday","Conch Soup (seasonal)",15,"conch soup.jpg"],
 ["Friday","Bundiga with fish and pigtail, coconut white rice",20,"bundiga.jpg"],
 ["Saturday","Hudut",20,"hudut.jpg"],
-["Every day","Rice & beans, salad with chicken",12,"rice-beans",1],
-["Every day","Rice & beans, salad with pork",12,"rice-beans",1],
-["Every day","Stew bean, coconut white rice, coleslaw with chicken",12,"stew-bean",1],
-["Every day","Stew bean, coconut white rice, coleslaw with pork",12,"stew-bean",1],
-["Every day","Stew bean, coconut white rice, coleslaw with pigtail",12,"stew-bean",1],
-["Every day","Any rice option with fish added (say which in notes)",15,"rice-with-fish",1]
+["Every day","Rice & beans, salad with chicken",12,"rice-beans.jpg",1],
+["Every day","Rice & beans, salad with pork",12,"rice-beans.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with chicken",12,"stew-bean.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pork",12,"stew-bean.jpg",1],
+["Every day","Stew bean, coconut white rice, coleslaw with pigtail",12,"stew-bean.jpg",1],
+["Every day","Any rice option with fish added (say which in notes)",15,"rice-with-fish.jpg",1]
 ];
 const $=s=>document.querySelector(s), qty=MENU.map(()=>0), money=n=>"$"+n.toFixed(2);
 const type=()=>$("input[name=type]:checked").value;
@@ -71,7 +71,7 @@ const type=()=>$("input[name=type]:checked").value;
 let html="",last="";
 MENU.forEach((m,i)=>{
   if(m[0]!==last){html+=`<h2>${m[0]==="Every day"?"Added menu (every day)":m[0]}</h2>`;last=m[0]}
-  html+=`<div class="card" id="c${i}"><img src="images/${m[3]}.jpg" alt="" onerror="ph(this)"><div class="info"><b>${m[1].replace("&","&amp;")}</b><span>${money(m[2])}</span></div>`+
+  html+=`<div class="card" id="c${i}"><img src="${encodeURI(m[3])}" alt="" onerror="ph(this)"><div class="info"><b>${m[1].replace("&","&amp;")}</b><span>${money(m[2])}</span></div>`+
   (m[4]?`<button type="button" class="yes" data-i="${i}" data-d="t">Add</button>`
        :`<div class="qty"><button type="button" data-i="${i}" data-d="-1" aria-label="Remove one">&minus;</button><output>0</output><button type="button" data-i="${i}" data-d="1" aria-label="Add one">+</button></div>`)+`</div>`;
 });
